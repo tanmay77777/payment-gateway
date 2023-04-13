@@ -1,0 +1,173 @@
+// app.post("/payment", (req, res) => {
+//   let tco = new TwoCheckout({
+//     sellerId: "254378796441",
+//     privateKey: "568F1F7A-0120-4398-83D5-1BC683B702EE",
+//   });
+//   var params = {
+//     merchantOrderId: "123",
+//     token: "jsfa;sjfalkfjflsdji",
+//     currency: "USD",
+//     total: "10.00",
+//     billingAddr: {
+//       name: "Testing Tester",
+//       addrLine1: "123 Test St",
+//       city: "Columbus",
+//       state: "Ohio",
+//       zipCode: "43123",
+//       country: "USA",
+//       email: "example@2co.com",
+//       phoneNumber: "5555555555",
+//     },
+//   };
+
+//   tco.checkout.authorize(params, function (error, data) {
+//     if (error) {
+//        res.send({message  : "this request is occure"});
+//     } else {
+//        res.send(data. res. resMsg);
+//     }
+//   });
+// });
+
+
+
+
+
+const request = {
+  sellerId: '901419650', // Replace with your 2Checkout seller ID
+  publishableKey: '9E9B7D66-DBE0-41D7-BC90-F35A981EBE2B', // Replace with your 2Checkout publishable key
+  card: {
+    number: '5555555555554444',
+    expMonth: '10',
+    expYear: '2020',
+    cvv: '123'
+  }
+};
+
+
+
+
+
+
+
+
+
+
+// attempt 2
+const Twocheckout = require('2checkout-node');
+const express = require('express');
+const http = require('http');
+const bodyParser = require('body-parser');
+
+const app = express();
+
+// set up body-parser middleware to handle JSON requests
+app.use(bodyParser.json());
+
+// create a route to handle 2checkout token requests
+app.post('/token', function(req, res) {
+  // instantiate 2checkout object with your sellerId and secretWord
+  const tco = new Twocheckout({
+    sellerId: 'your_seller_id',
+    privateKey: 'your_private_key'
+  });
+
+  // define the purchase data
+  const data = {
+    token: {
+      cardNum: req.body.cardNum,
+      expMonth: req.body.expMonth,
+      expYear: req.body.expYear,
+      cvv: req.body.cvv
+    },
+    billingAddr: {
+      name: req.body.name,
+      addrLine1: req.body.addrLine1,
+      city: req.body.city,
+      state: req.body.state,
+      zipCode: req.body.zipCode,
+      country: req.body.country,
+      email: req.body.email
+    }
+  };
+
+  // create the token request
+  tco.checkout.tokenize(data, function(error, data) {
+    if (error) {
+      console.log(error.message);
+      res.status(500).json({error: error.message});
+    } else {
+      console.log(data.response.token.token);
+      res.json({token: data.response.token.token});
+    }
+  });
+});
+
+// start the server
+http.createServer(app).listen(3000, function(){
+  console.log('Express server listening on port ' + 3000);
+});
+
+
+
+
+
+
+// attempt 3
+
+
+var Twocheckout = require('2checkout-node');
+var express = require('express');
+var http = require('http');
+var bodyParser = require('body-parser');
+
+
+var app = express();
+app.use(express.static(__dirname + '/public'));
+app.set('port', process.env.PORT || 3000);
+app.use(express.urlencoded({extended : true}));
+
+
+app.get('/', function(request, response) {
+    response.render('index')
+});
+
+
+app.post('/order', function(request, response) {
+    var tco = new Twocheckout({
+        sellerId: "901419650",       
+        privateKey: "568F1F7A-0120-4398-83D5-1BC683B702EE",    
+        
+    });
+
+  var params = {
+      "merchantOrderId": "123",
+      "token": request.body.token,
+      "currency": "USD",
+      "total": "10.00",
+      "billingAddr": {
+          "name": "Testing Tester",
+          "addrLine1": "123 Test St",
+          "city": "Columbus",
+          "state": "Ohio",
+          "zipCode": "43123",
+          "country": "USA",
+          "email": "example@2co.com",
+          "phoneNumber": "5555555555"
+      }
+  };
+
+  tco.checkout.authorize(params, function (error, data) {
+      if (error) {
+        console.log(error)
+          response.send(error.message);
+      } else {
+          response.send(data.response.responseMsg);
+      }
+  });
+
+});
+
+http.createServer(app).listen(app.get('port'), function(){
+    console.log('Express server listening on port ' + app.get('port'));
+});
